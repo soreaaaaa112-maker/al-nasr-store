@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ألبسة واكسسوارات النصر</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b0f19',
+                        cardBg: '#131c2e',
+                        goldAccent: '#d4af37',
+                        blueAccent: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Tahoma, sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-darkBg text-gray-100 dark:bg-darkBg dark:text-gray-100 min-h-screen pb-24">
+
+    <!-- شاشة تسجيل الدخول الأولى -->
+    <div id="loginScreen" class="fixed inset-0 bg-darkBg z-50 flex items-center justify-center p-4">
+        <div class="bg-cardBg border border-goldAccent/30 p-6 rounded-3xl w-full max-w-md shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-tr from-goldAccent to-blueAccent rounded-full mx-auto flex items-center justify-center text-black font-bold text-2xl mb-3 shadow-lg shadow-goldAccent/20">ن</div>
+                <h1 class="text-2xl font-bold text-goldAccent mb-1">ألبسة واكسسوارات النصر</h1>
+                <p class="text-gray-400 text-xs">أهلاً بك، يرجى إدخال اسمك وجنسك للمتابعة</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-300 mb-1">الاسم الكريم:</label>
+                    <input type="text" id="userNameInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm" placeholder="اكتب اسمك هنا...">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-300 mb-1">الجنس:</label>
+                    <select id="userGenderInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm">
+                        <option value="male">ذكر</option>
+                        <option value="female">أنثى</option>
+                    </select>
+                </div>
+                <button onclick="handleLogin()" class="w-full bg-gradient-to-r from-goldAccent to-yellow-600 text-black font-bold py-3 rounded-xl transition hover:opacity-90 shadow-lg shadow-goldAccent/20 text-sm">
+                    دخول المتجر
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- التطبيق الرئيسي -->
+    <div id="mainApp" class="hidden">
+        
+        <!-- الهيدر العلوي -->
+        <header class="bg-cardBg border-b border-goldAccent/20 p-4 sticky top-0 z-40 flex justify-between items-center shadow-md">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-goldAccent to-blueAccent flex items-center justify-center text-black font-bold">ن</div>
+                <div>
+                    <h2 class="font-bold text-goldAccent text-sm">متجر النصر</h2>
+                    <span id="welcomeUser" class="text-[11px] text-blue-400"></span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleTheme()" class="bg-darkBg border border-gray-800 text-goldAccent p-2 rounded-xl text-xs" title="تبديل المظهر">
+                    <i id="themeIcon" class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="switchTab('admin')" class="text-gray-300 hover:text-goldAccent text-xs bg-darkBg border border-gray-800 px-3 py-2 rounded-xl">
+                    <i class="fa-solid fa-lock ml-1"></i> المشرف
+                </button>
+            </div>
+        </header>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="p-4 max-w-4xl mx-auto">
+            
+            <div class="bg-gradient-to-r from-goldAccent/20 to-blueAccent/20 border border-goldAccent/40 p-3 rounded-2xl mb-4 text-center">
+                <p class="text-xs text-goldAccent font-semibold">✨ أهلاً بك في عالم الأناقة والتميز بمتجر النصر ✨</p>
+            </div>
+
+            <!-- صفحة المنتجات -->
+            <div id="tab-products" class="tab-content space-y-4">
+                <div id="categoriesList" class="flex gap-2 overflow-x-auto pb-2 scrollbar-none"></div>
+                <div id="productsGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+            </div>
+
+            <!-- صفحة سلة التسوق -->
+            <div id="tab-cart" class="tab-content hidden space-y-4">
+                <h3 class="text-lg font-bold text-goldAccent border-b border-gray-800 pb-2">سلة التسوق المباشر</h3>
+                <div id="cartItemsList" class="space-y-3"></div>
+                <div id="cartSummary" class="bg-cardBg border border-gray-800 p-4 rounded-2xl hidden mt-4 space-y-3">
+                    <div class="flex justify-between font-bold text-base">
+                        <span>المجموع الكلي:</span>
+                        <span id="totalPrice" class="text-goldAccent">0 ل.س</span>
+                    </div>
+                    <button onclick="confirmAndCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> إرسال الطلب للواتساب
+                    </button>
+                </div>
+            </div>
+
+            <!-- صفحة ديوني (للزبون) -->
+            <div id="tab-mydebt" class="tab-content hidden space-y-4">
+                <h3 class="text-lg font-bold text-goldAccent border-b border-gray-800 pb-2"><i class="fa-solid fa-file-invoice-dollar ml-2"></i> صفحة ديوني المسجلة</h3>
+                <div class="bg-cardBg border border-gray-800 p-5 rounded-2xl text-center space-y-3">
+                    <p class="text-xs text-gray-400">إجمالي المبلغ المطلوب منك حالياً:</p>
+                    <div id="myTotalDebtAmount" class="text-2xl font-bold text-goldAccent">0 ل.س</div>
+                    <p class="text-[11px] text-blue-400">ملاحظة: يتم تحديث هذا المبلغ من قبل الإدارة.</p>
+                </div>
+            </div>
+
+            <!-- صفحة أخبار المحل -->
+            <div id="tab-news" class="tab-content hidden space-y-4">
+                <h3 class="text-lg font-bold text-goldAccent border-b border-gray-800 pb-2"><i class="fa-solid fa-bullhorn ml-2"></i> أخبار وإعلانات المحل</h3>
+                <div id="newsContainer" class="space-y-3"></div>
+            </div>
+
+            <!-- صفحة الاستعلامات -->
+            <div id="tab-contact" class="tab-content hidden space-y-4">
+                <h3 class="text-lg font-bold text-goldAccent border-b border-gray-800 pb-2"><i class="fa-solid fa-circle-info ml-2"></i> صفحة الاستعلامات والدفع</h3>
+                <div class="bg-cardBg border border-gray-800 p-5 rounded-2xl text-center space-y-4">
+                    <p class="text-xs text-gray-300">للتواصل المباشر مع الإدارة عبر الواتساب أو الاتصال الهاتفي:</p>
+                    <div class="space-y-2">
+                        <a id="contactWhatsappBtn" href="#" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs shadow-lg">
+                            <i class="fa-brands fa-whatsapp text-base"></i> مراسلة الإدارة عبر واتساب
+                        </a>
+                        <a id="contactCallBtn" href="#" class="w-full bg-blueAccent hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs shadow-lg">
+                            <i class="fa-solid fa-phone text-base"></i> الاتصال هاتفياً بالإدارة
+                        </a>
+                    </div>
+
+                    <div class="border-t border-gray-800 pt-4 mt-4 space-y-2">
+                        <h4 class="font-bold text-goldAccent text-xs">💳 الدفع عبر باركود شامكاش (ShamCash)</h4>
+                        <p class="text-[11px] text-gray-400">قم بمسح الباركود أدناه لإتمام عملية الدفع الرقمي:</p>
+                        <div class="w-48 h-48 mx-auto bg-darkBg border border-goldAccent/30 rounded-2xl overflow-hidden p-2 flex items-center justify-center">
+                            <img id="shamcashImgDisplay" src="" class="w-full h-full object-contain">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة المشرف -->
+            <div id="tab-admin" class="tab-content hidden space-y-6">
+                <div id="adminLock" class="bg-cardBg border border-gray-800 p-6 rounded-2xl text-center space-y-4">
+                    <h3 class="text-lg font-bold text-goldAccent">لوحة المشرف المحمية</h3>
+                    <p class="text-xs text-gray-400">أدخل كلمة السر الخاصة بالمشرف للوصول لإدارة المتجر والديون والأخبار:</p>
+                    <input type="password" id="adminPasswordInput" class="w-full max-w-xs mx-auto bg-darkBg border border-gray-700 rounded-xl px-4 py-2 text-center text-white focus:outline-none focus:border-goldAccent block text-sm" placeholder="كلمة السر">
+                    <button onclick="verifyAdmin()" class="bg-goldAccent text-black font-bold px-6 py-2 rounded-xl text-sm">دخول اللوحة</button>
+                </div>
+
+                <div id="adminDashboard" class="hidden space-y-6">
+                    <div class="flex justify-between items-center bg-cardBg p-3 rounded-xl border border-goldAccent/20">
+                        <h3 class="text-sm font-bold text-goldAccent"><i class="fa-solid fa-shield-halved ml-2"></i> لوحة تحكم المشرف</h3>
+                        <button onclick="lockAdmin()" class="text-red-400 text-xs border border-red-500/30 px-3 py-1 rounded-lg">إقفال اللوحة</button>
+                    </div>
+
+                    <!-- إعدادات المتجر والتواصل -->
+                    <div class="bg-cardBg border border-gray-800 p-4 rounded-2xl space-y-3">
+                        <h4 class="font-bold text-goldAccent text-xs border-b border-gray-800 pb-2"><i class="fa-solid fa-gear ml-1"></i> إعدادات أرقام التواصل وباركود شامكاش</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] text-gray-400 mb-1">رقم الواتساب لاستقبال الطلبات (بدون +):</label>
+                                <input type="text" id="settingWhatsapp" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-gray-400 mb-1">رقم الاتصال المباشر (مع المفتاح):</label>
+                                <input type="text" id="settingPhone" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-400 mb-1">تحديث صورة باركود شامكاش:</label>
+                            <input type="file" id="settingShamcashFile" accept="image/*" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-goldAccent file:text-black hover:file:opacity-80">
+                        </div>
+                        <button onclick="saveStoreSettings()" class="w-full bg-blueAccent text-white font-bold py-2 rounded-xl text-xs shadow-md">حفظ إعدادات المتجر</button>
+                    </div>
+
+                    <!-- نشر الأخبار والاعلانات -->
+                    <div class="bg-cardBg border border-gray-800 p-4 rounded-2xl space-y-3">
+                        <h4 class="font-bold text-goldAccent text-xs border-b border-gray-800 pb-2"><i class="fa-solid fa-bullhorn ml-1"></i> نشر خبر أو إعلان جديد للمحل</h4>
+                        <input type="text" id="newsTitle" placeholder="عنوان الخبر (مثلاً: وصول تشكيلة شتوية جديدة)" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <textarea id="newsContent" placeholder="تفاصيل الخبر..." class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white h-20"></textarea>
+                        <button onclick="addNewNews()" class="w-full bg-goldAccent text-black font-bold py-2 rounded-xl text-xs shadow-md">نشر الخبر فوراً</button>
+                        <div id="adminNewsList" class="space-y-2 max-h-36 overflow-y-auto mt-2"></div>
+                    </div>
+
+                    <!-- إضافة منتج جديد -->
+                    <div class="bg-cardBg border border-gray-800 p-4 rounded-2xl space-y-3">
+                        <h4 class="font-bold text-goldAccent text-xs border-b border-gray-800 pb-2"><i class="fa-solid fa-plus ml-1"></i> إضافة منتج جديد للمتجر</h4>
+                        <input type="text" id="newProdName" placeholder="اسم المنتج" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="number" id="newProdPrice" placeholder="سعر البيع (ل.س)" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                            <input type="text" id="newProdCat" placeholder="الصنف (ألبسة، إكسسوارات..)" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                        </div>
+                        <div>
+                            <select id="newProdGender" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                                <option value="all">متاح للجميع</option>
+                                <option value="male">ذكور فقط</option>
+                                <option value="female">إناث فقط</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-400 mb-1">اختر صورة المنتج:</label>
+                            <input type="file" id="newProdFile" accept="image/*" class="w-full text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-goldAccent file:text-black hover:file:opacity-80">
+                        </div>
+                        <button onclick="addNewProduct()" class="w-full bg-goldAccent text-black font-bold py-2 rounded-xl text-xs shadow-md">إضافة المنتج</button>
+                    </div>
+
+                    <!-- إدارة وحذف المنتجات -->
+                    <div class="bg-cardBg border border-gray-800 p-4 rounded-2xl space-y-3">
+                        <h4 class="font-bold text-red-400 text-xs border-b border-gray-800 pb-2"><i class="fa-solid fa-box-archive ml-1"></i> إدارة وحذف المنتجات</h4>
+                        <div id="adminProductsList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+                    </div>
+
+                    <!-- دفتر ديون الزبائن -->
+                    <div class="bg-cardBg border border-gray-800 p-4 rounded-2xl space-y-3">
+                        <h4 class="font-bold text-blue-400 text-xs border-b border-gray-800 pb-2"><i class="fa-solid fa-book-open ml-1"></i> دفتر ديون الزبائن</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <input type="text" id="debtorName" placeholder="اسم الزبون تماماً" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                            <input type="number" id="debtorAmount" placeholder="المبلغ (إضافة أو خصم)" class="w-full bg-darkBg border border-gray-700 rounded-xl px-3 py-2 text-xs text-white">
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="manageDebt('add')" class="bg-blueAccent text-white font-bold py-2 rounded-xl text-[11px]">إضافة دين</button>
+                            <button onclick="manageDebt('subtract')" class="bg-amber-600 text-white font-bold py-2 rounded-xl text-[11px]">مسح جزئي (خصم)</button>
+                            <button onclick="manageDebt('clear')" class="bg-red-600 text-white font-bold py-2 rounded-xl text-[11px]">تصفير كلي</button>
+                        </div>
+                        
+                        <div class="overflow-x-auto mt-3 max-h-60 overflow-y-auto">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-darkBg text-gray-400 border-b border-gray-800 sticky top-0">
+                                    <tr>
+                                        <th class="p-2">الزبون</th>
+                                        <th class="p-2">المبلغ</th>
+                                        <th class="p-2">حذف كلي</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="debtsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+
+        <!-- شريط التنقل السفلي -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-cardBg border-t border-goldAccent/20 py-2 px-2 flex justify-around items-center z-40 shadow-2xl">
+            <button onclick="switchTab('products')" id="nav-btn-products" class="flex flex-col items-center text-goldAccent transition">
+                <i class="fa-solid fa-store text-lg mb-0.5"></i>
+                <span class="text-[10px]">المنتجات</span>
+            </button>
+            <button onclick="switchTab('cart')" id="nav-btn-cart" class="flex flex-col items-center text-gray-400 hover:text-goldAccent transition relative">
+                <i class="fa-solid fa-cart-shopping text-lg mb-0.5"></i>
+                <span class="text-[10px]">السلة</span>
+                <span id="cartBadge" class="absolute -top-1 -right-2 bg-blueAccent text-black font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+            </button>
+            <button onclick="switchTab('mydebt')" id="nav-btn-mydebt" class="flex flex-col items-center text-gray-400 hover:text-goldAccent transition">
+                <i class="fa-solid fa-file-invoice-dollar text-lg mb-0.5"></i>
+                <span class="text-[10px]">ديوني</span>
+            </button>
+            <button onclick="switchTab('news')" id="nav-btn-news" class="flex flex-col items-center text-gray-400 hover:text-goldAccent transition">
+                <i class="fa-solid fa-bullhorn text-lg mb-0.5"></i>
+                <span class="text-[10px]">الأخبار</span>
+            </button>
+            <button onclick="switchTab('contact')" id="nav-btn-contact" class="flex flex-col items-center text-gray-400 hover:text-goldAccent transition">
+                <i class="fa-solid fa-circle-info text-lg mb-0.5"></i>
+                <span class="text-[10px]">استعلامات</span>
+            </button>
+            <button onclick="switchTab('admin')" id="nav-btn-admin" class="flex flex-col items-center text-gray-400 hover:text-goldAccent transition">
+                <i class="fa-solid fa-user-gear text-lg mb-0.5"></i>
+                <span class="text-[10px]">المشرف</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- دوال التطبيق البرمجية -->
+    <script>
+        const ADMIN_PASS = "1234";
+        
+        let storeSettings = JSON.parse(localStorage.getItem('naser_settings')) || {
+            whatsapp: "963988888888",
+            phone: "+963988888888",
+            shamcashQR: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300"
+        };
+
+        let currentUser = { name: "", gender: "" };
+        let cart = [];
+        let products = JSON.parse(localStorage.getItem('naser_products')) || [
+            { id: '1', name: 'جاكيت شتوي فخم', price: 75000, category: 'ألبسة', gender: 'male', image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300' },
+            { id: '2', name: 'حقيبة نسائية أنيقة', price: 45000, category: 'إكسسوارات', gender: 'female', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=300' }
+        ];
+
+        let debts = JSON.parse(localStorage.getItem('naser_debts')) || [
+            { id: '1', name: 'أحمد', amount: 25000 }
+        ];
+
+        let newsList = JSON.parse(localStorage.getItem('naser_news')) || [
+            { id: '1', title: 'أهلاً بكم في متجر النصر', content: 'تم افتتاح قسم الألبسة والاكسسوارات الجديدة بأسعار منافسة.', date: '2026/10/28' }
+        ];
+
+        function handleLogin() {
+            const nameInput = document.getElementById('userNameInput');
+            const genderInput = document.getElementById('userGenderInput');
+            
+            if(!nameInput || !nameInput.value.trim()) {
+                alert("الرجاء إدخال الاسم الكريم");
+                return;
+            }
+
+            currentUser.name = nameInput.value.trim();
+            currentUser.gender = genderInput ? genderInput.value : 'male';
+
+            document.getElementById('welcomeUser').innerText = `أهلاً بك، ${currentUser.name}`;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            updateStoreInfo();
+            renderCategories();
+            renderProducts();
+            renderNews();
+            renderDebts();
+            renderAdminProducts();
+            renderAdminNews();
+        }
+
+        function updateStoreInfo() {
+            document.getElementById('contactWhatsappBtn').href = `https://wa.me/${storeSettings.whatsapp}?text=مرحباً، أريد الاستفسار عن...`;
+            document.getElementById('contactCallBtn').href = `tel:${storeSettings.phone}`;
+            document.getElementById('settingWhatsapp').value = storeSettings.whatsapp;
+            document.getElementById('settingPhone').value = storeSettings.phone;
+            document.getElementById('shamcashImgDisplay').src = storeSettings.shamcashQR;
+        }
+
+        function saveStoreSettings() {
+            const ws = document.getElementById('settingWhatsapp').value.trim();
+            const ph = document.getElementById('settingPhone').value.trim();
+            const fileInput = document.getElementById('settingShamcashFile');
+
+            if(!ws || !ph) {
+                alert("الرجاء تعبئة أرقام التواصل بشكل صحيح");
+                return;
+            }
+
+            storeSettings.whatsapp = ws;
+            storeSettings.phone = ph;
+
+            if(fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    storeSettings.shamcashQR = e.target.result;
+                    localStorage.setItem('naser_settings', JSON.stringify(storeSettings));
+                    updateStoreInfo();
+                    alert("✅ تم حفظ إعدادات المتجر بنجاح!");
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                localStorage.setItem('naser_settings', JSON.stringify(storeSettings));
+                updateStoreInfo();
+                alert("✅ تم حفظ أرقام التواصل بنجاح!");
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if(html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.style.backgroundColor = '#f8fafc';
+                icon.className = "fa-solid fa-sun";
+            } else {
+                html.classList.add('dark');
+                html.style.backgroundColor = '#0b0f19';
+                icon.className = "fa-solid fa-moon";
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            ['products', 'cart', 'mydebt', 'news', 'contact', 'admin'].forEach(t => {
+                const btn = document.getElementById(`nav-btn-${t}`);
+                if(btn) {
+                    btn.classList.remove('text-goldAccent');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+            const activeBtn = document.getElementById(`nav-btn-${tabId}`);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-gray-400');
+                activeBtn.classList.add('text-goldAccent');
+            }
+            if(tabId === 'mydebt') updateMyDebt();
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesList');
+            if(!container) return;
+            const categories = ['الكل', ...new Set(products.map(p => p.category))];
+            
+            container.innerHTML = '';
+            categories.forEach((cat, index) => {
+                let btn = document.createElement('button');
+                btn.className = `category-btn px-4 py-2 rounded-xl text-xs whitespace-nowrap transition ${index === 0 ? 'bg-goldAccent text-black font-semibold' : 'bg-cardBg border border-gray-700 text-gray-300'}`;
+                btn.innerText = cat;
+                btn.onclick = () => filterCategory(cat, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function filterCategory(category, btnElement) {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.className = "category-btn bg-cardBg border border-gray-700 text-gray-300 px-4 py-2 rounded-xl text-xs whitespace-nowrap transition";
+            });
+            btnElement.className = "category-btn bg-goldAccent text-black font-semibold px-4 py-2 rounded-xl text-xs whitespace-nowrap transition";
+            renderProducts(category);
+        }
+
+        function renderProducts(filterCat = 'الكل') {
+            const grid = document.getElementById('productsGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+
+            let filtered = products;
+            if(filterCat !== 'الكل') {
+                filtered = products.filter(p => p.category === filterCat);
+            }
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<p class="text-gray-500 text-center col-span-2 text-xs py-6">لا توجد منتجات مضافة حالياً</p>`;
+                return;
+            }
+
+            filtered.forEach(product => {
+                let isRestricted = (product.gender === 'female' && currentUser.gender === 'male');
+
+                let card = document.createElement('div');
+                card.className = `bg-cardBg border border-gray-800 rounded-2xl overflow-hidden shadow-md flex flex-col justify-between ${isRestricted ? 'opacity-50' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="relative h-32">
+                        <img src="${product.image}" class="w-full h-full object-cover">
+                        ${isRestricted ? '<span class="absolute inset-0 bg-black/70 flex items-center justify-center text-[10px] text-goldAccent font-bold text-center p-2">غير مسموح بحسب جنس الحساب</span>' : ''}
+                    </div>
+                    <div class="p-3 flex flex-col flex-grow justify-between">
+                        <div>
+                            <h4 class="font-bold text-xs mb-1">${product.name}</h4>
+                            <span class="text-goldAccent text-xs font-semibold">${Number(product.price).toLocaleString()} ل.س</span>
+                        </div>
+                        <button onclick="${isRestricted ? `alert('عذراً، هذا الصنف غير مسموح لحسابك.')` : `addToCart('${product.id}')`}" class="mt-2 w-full bg-blueAccent/25 hover:bg-blueAccent text-blue-300 hover:text-black font-bold py-1.5 rounded-xl text-[11px] transition border border-blueAccent/40">
+                            إضافة للسلة
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const existing = cart.find(item => item.id === productId);
+            if(existing) {
+                existing.qty++;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            updateCartUI();
+            alert("تمت الإضافة للسلة");
+        }
+
+        function updateCartUI() {
+            const list = document.getElementById('cartItemsList');
+            const summary = document.getElementById('cartSummary');
+            const badge = document.getElementById('cartBadge');
+            if(!list) return;
+            
+            if(cart.length === 0) {
+                list.innerHTML = `<p class="text-gray-500 text-center py-8 text-xs">السلة فارغة حالياً</p>`;
+                if(summary) summary.classList.add('hidden');
+                if(badge) badge.classList.add('hidden');
+                return;
+            }
+
+            if(badge) {
+                badge.innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+                badge.classList.remove('hidden');
+            }
+            if(summary) summary.classList.remove('hidden');
+
+            list.innerHTML = '';
+            let total = 0;
+
+            cart.forEach(item => {
+                total += item.price * item.qty;
+                let div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-darkBg p-3 rounded-xl border border-gray-800 text-xs";
+                div.innerHTML = `
+                    <div>
+                        <h5 class="font-bold">${item.name}</h5>
+                        <span class="text-goldAccent">${Number(item.price).toLocaleString()} ل.س × ${item.qty}</span>
+                    </div>
+                    <button onclick="removeFromCart('${item.id}')" class="text-red-400 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+                `;
+                list.appendChild(div);
+            });
+
+            document.getElementById('totalPrice').innerText = total.toLocaleString() + " ل.س";
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartUI();
+        }
+
+        function confirmAndCheckout() {
+            if(!confirm("هل أنت متأكد من تأكيد البيع وإرسال الطلب؟")) return;
+
+            let total = 0;
+            cart.forEach(item => { total += item.price * item.qty; });
+
+            let text = `🛒 *طلب جديد من متجر النصر*\n\n👤 اسم الزبون: ${currentUser.name} (${currentUser.gender === 'male' ? 'ذكر' : 'أنثى'})\n\n📦 المنتجات:\n`;
+            cart.forEach(item => {
+                text += `- ${item.name} (عدد: ${item.qty}) - السعر: ${(item.price * item.qty).toLocaleString()} ل.س\n`;
+            });
+            text += `\n💰 المجموع الكلي: ${total.toLocaleString()} ل.س`;
+
+            window.open(`https://wa.me/${storeSettings.whatsapp}?text=${encodeURIComponent(text)}`);
+            cart = [];
+            updateCartUI();
+            alert("✅ تم إرسال الطلب بنجاح!");
+        }
+
+        function verifyAdmin() {
+            const pass = document.getElementById('adminPasswordInput').value;
+            if(pass === ADMIN_PASS) {
+                document.getElementById('adminLock').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+            } else {
+                alert("كلمة السر خطأ!");
+            }
+        }
+
+        function lockAdmin() {
+            document.getElementById('adminPasswordInput').value = "";
+            document.getElementById('adminLock').classList.remove('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+        }
+
+        function addNewProduct() {
+            const name = document.getElementById('newProdName').value.trim();
+            const price = parseFloat(document.getElementById('newProdPrice').value);
+            const category = document.getElementById('newProdCat').value.trim();
+            const gender = document.getElementById('newProdGender').value;
+            const fileInput = document.getElementById('newProdFile');
+
+            if(!name || isNaN(price) || !category) {
+                alert("الرجاء تعبئة اسم المنتج، السعر، والصنف على الأقل");
+                return;
+            }
+
+            if(fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    saveProductToList(name, price, category, gender, e.target.result);
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveProductToList(name, price, category, gender, "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300");
+            }
+        }
+
+        function saveProductToList(name, price, category, gender, image) {
+            const newProd = { id: Date.now().toString(), name, price, category, gender, image };
+            products.push(newProd);
+            localStorage.setItem('naser_products', JSON.stringify(products));
+            document.getElementById('newProdName').value = '';
+            document.getElementById('newProdPrice').value = '';
+            document.getElementById('newProdCat').value = '';
+            document.getElementById('newProdFile').value = '';
+            renderProducts();
+            renderCategories();
+            renderAdminProducts();
+            alert("✅ تم إضافة المنتج بنجاح!");
+        }
+
+        function deleteProduct(id) {
+            if(!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('naser_products', JSON.stringify(products));
+            renderProducts();
+            renderCategories();
+            renderAdminProducts();
+            alert("🗑️ تم حذف المنتج.");
+        }
+
+        function renderAdminProducts() {
+            const container = document.getElementById('adminProductsList');
+            if(!container) return;
+            container.innerHTML = '';
+            if(products.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 text-center text-xs py-2">لا توجد منتجات حالياً</p>`;
+                return;
+            }
+            products.forEach(p => {
+                let div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-darkBg p-2 rounded-xl border border-gray-800 text-xs";
+                div.innerHTML = `
+                    <span>${p.name} - ${Number(p.price).toLocaleString()} ل.س</span>
+                    <button onclick="deleteProduct('${p.id}')" class="text-red-400 px-2 py-1"><i class="fa-solid fa-trash"></i> حذف</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addNewNews() {
+            const title = document.getElementById('newsTitle').value.trim();
+            const content = document.getElementById('newsContent').value.trim();
+
+            if(!title || !content) {
+                alert("الرجاء كتابة عنوان وتفاصيل الخبر");
+                return;
+            }
+
+            const newNews = { id: Date.now().toString(), title, content, date: new Date().toLocaleDateString('ar-SY') };
+            newsList.push(newNews);
+            localStorage.setItem('naser_news', JSON.stringify(newsList));
+            document.getElementById('newsTitle').value = '';
+            document.getElementById('newsContent').value = '';
+            renderNews();
+            renderAdminNews();
+            alert("📢 تم نشر الخبر بنجاح!");
+        }
+
+        function deleteNews(id) {
+            newsList = newsList.filter(n => n.id !== id);
+            localStorage.setItem('naser_news', JSON.stringify(newsList));
+            renderNews();
+            renderAdminNews();
+        }
+
+        function renderNews() {
+            const container = document.getElementById('newsContainer');
+            if(!container) return;
+            container.innerHTML = '';
+            if(newsList.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 text-center text-xs py-6">لا توجد أخبار أو إعلانات حالياً</p>`;
+                return;
+            }
+
+            newsList.forEach(item => {
+                let div = document.createElement('div');
+                div.className = "bg-cardBg border border-goldAccent/30 p-4 rounded-2xl space-y-2";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-goldAccent text-sm">${item.title}</h4>
+                        <span class="text-[10px] text-gray-400">${item.date || ''}</span>
+                    </div>
+                    <p class="text-xs text-gray-300 leading-relaxed">${item.content}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderAdminNews() {
+            const container = document.getElementById('adminNewsList');
+            if(!container) return;
+            container.innerHTML = '';
+            newsList.forEach(item => {
+                let div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-darkBg p-2 rounded-xl border border-gray-800 text-xs";
+                div.innerHTML = `
+                    <span class="truncate max-w-[200px]">${item.title}</span>
+                    <button onclick="deleteNews('${item.id}')" class="text-red-400 px-2 py-1"><i class="fa-solid fa-trash"></i> حذف</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function manageDebt(action) {
+            const name = document.getElementById('debtorName').value.trim();
+            const amount = parseFloat(document.getElementById('debtorAmount').value);
+
+            if(!name) {
+                alert("الرجاء إدخال اسم الزبون");
+                return;
+            }
+
+            let existing = debts.find(d => d.name.toLowerCase() === name.toLowerCase());
+
+            if(action === 'clear') {
+                if(existing) {
+                    debts = debts.filter(d => d.id !== existing.id);
+                    localStorage.setItem('naser_debts', JSON.stringify(debts));
+                    renderDebts();
+                    alert(`تم تصفير دين الزبون ${name} كلياً`);
+                }
+                return;
+            }
+
+            if(isNaN(amount)) {
+                alert("الرجاء إدخال المبلغ بشكل صحيح");
+                return;
+            }
+
+            if(!existing) {
+                if(action === 'subtract') {
+                    alert("هذا الزبون ليس لديه سجل ديون مسبق.");
+                    return;
+                }
+                debts.push({ id: Date.now().toString(), name, amount });
+            } else {
+                if(action === 'add') existing.amount += amount;
+                else if(action === 'subtract') {
+                    existing.amount -= amount;
+                    if(existing.amount < 0) existing.amount = 0;
+                }
+            }
+
+            localStorage.setItem('naser_debts', JSON.stringify(debts));
+            renderDebts();
+            document.getElementById('debtorName').value = '';
+            document.getElementById('debtorAmount').value = '';
+            alert("✅ تم تحديث سجل الديون بنجاح!");
+        }
+
+        function deleteDebtCompletely(id) {
+            debts = debts.filter(d => d.id !== id);
+            localStorage.setItem('naser_debts', JSON.stringify(debts));
+            renderDebts();
+        }
+
+        function renderDebts() {
+            const tbody = document.getElementById('debtsTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            if(debts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-3">لا توجد ديون مسجلة</td></tr>`;
+                return;
+            }
+
+            debts.forEach(debt => {
+                let tr = document.createElement('tr');
+                tr.className = "border-b border-gray-800";
+                tr.innerHTML = `
+                    <td class="p-2">${debt.name}</td>
+                    <td class="p-2 text-goldAccent font-bold">${Number(debt.amount).toLocaleString()} ل.س</td>
+                    <td class="p-2"><button onclick="deleteDebtCompletely('${debt.id}')" class="text-red-400"><i class="fa-solid fa-xmark"></i> حذف</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateMyDebt() {
+            const myDebtEl = document.getElementById('myTotalDebtAmount');
+            if(!myDebtEl) return;
+            let myRecord = debts.find(d => d.name.toLowerCase() === currentUser.name.toLowerCase());
+            myDebtEl.innerText = myRecord ? Number(myRecord.amount).toLocaleString() + " ل.س" : "0 ل.س (ليس عليك ديون مسجلة)";
+        }
+    </script>
+</body>
+</html>
