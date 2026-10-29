@@ -31,13 +31,13 @@
 </head>
 <body class="bg-darkBg text-gray-100 dark:bg-darkBg dark:text-gray-100 min-h-screen pb-24">
 
-    <!-- شاشة تسجيل الدخول الأولى -->
+    <!-- شاشة تسجيل الدخول الشخصية والرمز السري -->
     <div id="loginScreen" class="fixed inset-0 bg-darkBg z-50 flex items-center justify-center p-4">
         <div class="bg-cardBg border border-goldAccent/30 p-6 rounded-3xl w-full max-w-md shadow-2xl">
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-gradient-to-tr from-goldAccent to-blueAccent rounded-full mx-auto flex items-center justify-center text-black font-bold text-2xl mb-3 shadow-lg shadow-goldAccent/20">ن</div>
                 <h1 class="text-2xl font-bold text-goldAccent mb-1">ألبسة واكسسوارات النصر</h1>
-                <p class="text-gray-400 text-xs">أهلاً بك، يرجى إدخال اسمك وجنسك للمتابعة</p>
+                <p class="text-gray-400 text-xs">أهلاً بك، يرجى إدخال اسمك ورمزك السري الخاص للمتابعة</p>
             </div>
             <div class="space-y-4">
                 <div>
@@ -45,7 +45,11 @@
                     <input type="text" id="userNameInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm" placeholder="اكتب اسمك هنا...">
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-300 mb-1">الجنس:</label>
+                    <label class="block text-xs text-gray-300 mb-1">الرمز السري الشخصي:</label>
+                    <input type="password" id="userPinInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm" placeholder="أدخل رمزك السري (أرقام أو حروف)...">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-300 mb-1">الجنس (للزبائن الجدد):</label>
                     <select id="userGenderInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm">
                         <option value="male">ذكر</option>
                         <option value="female">أنثى</option>
@@ -103,7 +107,7 @@
                         <span id="totalPrice" class="text-goldAccent">0 ل.س</span>
                     </div>
                     <button onclick="confirmAndCheckout()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm">
-                        <i class="fa-brands fa-whatsapp text-lg"></i> إرسال الطلب للواتساب
+                        <i class="fa-brands fa-whatsapp text-lg"></i> إرسال الطلب للواتساب مع الصور
                     </button>
                 </div>
             </div>
@@ -283,7 +287,7 @@
                 <span class="text-[10px]">استعلامات</span>
             </button>
             <button onclick="switchTab('admin')" id="nav-btn-admin" class="flex flex-col items-center text-gray-400 hover:text-goldAccent transition">
-                <i class="fa-solid fa-user-gear text-lg mb-0.5"></i>
+                <i class="fa-solid alt fa-user-gear text-lg mb-0.5"></i>
                 <span class="text-[10px]">المشرف</span>
             </button>
         </nav>
@@ -300,6 +304,7 @@
         };
 
         let currentUser = { name: "", gender: "" };
+        let usersPins = JSON.parse(localStorage.getItem('naser_users_pins')) || {};
         let cart = [];
         let products = JSON.parse(localStorage.getItem('naser_products')) || [
             { id: '1', name: 'جاكيت شتوي فخم', price: 75000, category: 'ألبسة', gender: 'male', image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300' },
@@ -316,15 +321,37 @@
 
         function handleLogin() {
             const nameInput = document.getElementById('userNameInput');
+            const pinInput = document.getElementById('userPinInput');
             const genderInput = document.getElementById('userGenderInput');
             
-            if(!nameInput || !nameInput.value.trim()) {
+            const name = nameInput ? nameInput.value.trim() : "";
+            const pin = pinInput ? pinInput.value.trim() : "";
+
+            if(!name) {
                 alert("الرجاء إدخال الاسم الكريم");
                 return;
             }
+            if(!pin) {
+                alert("الرجاء إدخال الرمز السري الشخصي");
+                return;
+            }
 
-            currentUser.name = nameInput.value.trim();
-            currentUser.gender = genderInput ? genderInput.value : 'male';
+            // نظام التحقق من الحساب والرمز السري
+            if(usersPins[name]) {
+                if(usersPins[name].pin !== pin) {
+                    alert("❌ الرمز السري غير صحيح لهذا الاسم! يرجى إدخال الرمز الصحيح الخاص بك.");
+                    return;
+                }
+                currentUser.gender = usersPins[name].gender;
+            } else {
+                // تسجيل زبون جديد مع رمزه وجنسه
+                const gender = genderInput ? genderInput.value : 'male';
+                usersPins[name] = { pin: pin, gender: gender };
+                localStorage.setItem('naser_users_pins', JSON.stringify(usersPins));
+                currentUser.gender = gender;
+            }
+
+            currentUser.name = name;
 
             document.getElementById('welcomeUser').innerText = `أهلاً بك، ${currentUser.name}`;
             document.getElementById('loginScreen').classList.add('hidden');
@@ -536,16 +563,16 @@
             let total = 0;
             cart.forEach(item => { total += item.price * item.qty; });
 
-            let text = `🛒 *طلب جديد من متجر النصر*\n\n👤 اسم الزبون: ${currentUser.name} (${currentUser.gender === 'male' ? 'ذكر' : 'أنثى'})\n\n📦 المنتجات المطلوبة:\n`;
+            let text = `🛒 *طلب جديد من متجر النصر*\n\n👤 اسم الزبون: ${currentUser.name} (${currentUser.gender === 'male' ? 'ذكر' : 'أنثى'})\n\n📦 المنتجات المطلوبة مع صورها:\n`;
             cart.forEach(item => {
-                text += `- ${item.name} (العدد: ${item.qty}) - السعر: ${(item.price * item.qty).toLocaleString()} ل.س\n`;
+                text += `\n- *${item.name}* (العدد: ${item.qty}) - السعر: ${(item.price * item.qty).toLocaleString()} ل.س\n🔗 صورة المنتج: ${item.image}\n`;
             });
             text += `\n💰 المجموع الكلي: ${total.toLocaleString()} ل.س`;
 
             window.open(`https://wa.me/${storeSettings.whatsapp}?text=${encodeURIComponent(text)}`);
             cart = [];
             updateCartUI();
-            alert("✅ تم إرسال الطلب بنجاح!");
+            alert("✅ تم إرسال الطلب مع الصور بنجاح!");
         }
 
         function verifyAdmin() {
