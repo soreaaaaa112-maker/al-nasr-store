@@ -31,29 +31,29 @@
 </head>
 <body class="bg-darkBg text-gray-100 dark:bg-darkBg dark:text-gray-100 min-h-screen pb-24">
 
-    <!-- شاشة تسجيل الدخول الشخصية والرمز السري -->
+    <!-- شاشة تسجيل الدخول الشخصية والرمز السري الاختياري -->
     <div id="loginScreen" class="fixed inset-0 bg-darkBg z-50 flex items-center justify-center p-4">
         <div class="bg-cardBg border border-goldAccent/30 p-6 rounded-3xl w-full max-w-md shadow-2xl">
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-gradient-to-tr from-goldAccent to-blueAccent rounded-full mx-auto flex items-center justify-center text-black font-bold text-2xl mb-3 shadow-lg shadow-goldAccent/20">ن</div>
                 <h1 class="text-2xl font-bold text-goldAccent mb-1">ألبسة واكسسوارات النصر</h1>
-                <p class="text-gray-400 text-xs">أهلاً بك، يرجى إدخال اسمك ورمزك السري الخاص للمتابعة</p>
+                <p id="loginSubtitle" class="text-gray-400 text-xs">أهلاً بك، يرجى إدخال اسمك الثلاثي للمتابعة</p>
             </div>
             <div class="space-y-4">
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">الاسم الكريم:</label>
-                    <input type="text" id="userNameInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm" placeholder="اكتب اسمك هنا...">
+                <div id="nameFieldContainer">
+                    <label class="block text-xs text-gray-300 mb-1">الاسم الثلاثي الكريم:</label>
+                    <input type="text" id="userNameInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm" placeholder="اكتب اسمك الثلاثي هنا...">
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">الرمز السري الشخصي:</label>
-                    <input type="password" id="userPinInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm" placeholder="أدخل رمزك السري (أرقام أو حروف)...">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-300 mb-1">الجنس (للزبائن الجدد):</label>
+                <div id="genderFieldContainer">
+                    <label class="block text-xs text-gray-300 mb-1">الجنس:</label>
                     <select id="userGenderInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm">
                         <option value="male">ذكر</option>
                         <option value="female">أنثى</option>
                     </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-300 mb-1">الرمز السري الشخصي (اختياري لكل دخول):</label>
+                    <input type="password" id="userPinInput" class="w-full bg-darkBg border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-goldAccent text-sm" placeholder="أدخل رمزاً سرياً إذا رغبت بحماية حسابك...">
                 </div>
                 <button onclick="handleLogin()" class="w-full bg-gradient-to-r from-goldAccent to-yellow-600 text-black font-bold py-3 rounded-xl transition hover:opacity-90 shadow-lg shadow-goldAccent/20 text-sm">
                     دخول المتجر
@@ -163,7 +163,7 @@
             <div id="tab-admin" class="tab-content hidden space-y-6">
                 <div id="adminLock" class="bg-cardBg border border-gray-800 p-6 rounded-2xl text-center space-y-4">
                     <h3 class="text-lg font-bold text-goldAccent">لوحة المشرف المحمية</h3>
-                    <p class="text-xs text-gray-400">أدخل كلمة السر الخاصة بالمشرف للوصول لإدارة المتجر والديون والأخبار:</p>
+                    <p class="text-xs text-gray-400">أدخل كلمة السر الخاصة بالمشرف (2010محمد) للوصول لإدارة المتجر والديون والأخبار:</p>
                     <input type="password" id="adminPasswordInput" class="w-full max-w-xs mx-auto bg-darkBg border border-gray-700 rounded-xl px-4 py-2 text-center text-white focus:outline-none focus:border-goldAccent block text-sm" placeholder="كلمة السر">
                     <button onclick="verifyAdmin()" class="bg-goldAccent text-black font-bold px-6 py-2 rounded-xl text-sm">دخول اللوحة</button>
                 </div>
@@ -287,7 +287,7 @@
                 <span class="text-[10px]">استعلامات</span>
             </button>
             <button onclick="switchTab('admin')" id="nav-btn-admin" class="flex flex-col items-center text-gray-400 hover:text-goldAccent transition">
-                <i class="fa-solid alt fa-user-gear text-lg mb-0.5"></i>
+                <i class="fa-solid fa-user-gear text-lg mb-0.5"></i>
                 <span class="text-[10px]">المشرف</span>
             </button>
         </nav>
@@ -295,7 +295,7 @@
 
     <!-- دوال التطبيق البرمجية -->
     <script>
-        const ADMIN_PASS = "1234";
+        const ADMIN_PASS = "2010محمد";
         
         let storeSettings = JSON.parse(localStorage.getItem('naser_settings')) || {
             whatsapp: "963988888888",
@@ -303,7 +303,7 @@
             shamcashQR: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300"
         };
 
-        let currentUser = { name: "", gender: "" };
+        let currentUser = JSON.parse(localStorage.getItem('naser_current_user')) || { name: "", gender: "male" };
         let usersPins = JSON.parse(localStorage.getItem('naser_users_pins')) || {};
         let cart = [];
         let products = JSON.parse(localStorage.getItem('naser_products')) || [
@@ -319,40 +319,63 @@
             { id: '1', title: 'أهلاً بكم في متجر النصر', content: 'تم افتتاح قسم الألبسة والاكسسوارات الجديدة بأسعار منافسة.', date: '2026/10/28' }
         ];
 
+        // تحقق تلقائي إذا كان الاسم مخزناً مسبقاً
+        window.onload = function() {
+            if(currentUser.name) {
+                // إذا كان مسجلاً مسبقاً، نتحقق فقط إن كان له رمز سري محفوظ
+                const savedPinData = usersPins[currentUser.name];
+                if(savedPinData && savedPinData.pin) {
+                    // إذا كان له رمز، نخفي حقل الاسم ونطلب الرمز السري الاختياري
+                    document.getElementById('nameFieldContainer').style.display = 'none';
+                    document.getElementById('genderFieldContainer').style.display = 'none';
+                    document.getElementById('userNameInput').value = currentUser.name;
+                    document.getElementById('loginSubtitle').innerText = `أهلاً بك مجدداً يا ${currentUser.name}، أدخل رمزك السري (أو اترك الحقل فارغاً للدخول مباشرة):`;
+                } else {
+                    // إذا لم يكن له رمز، ندخله مباشرة بدون شاشة تسجيل
+                    initAppSession();
+                }
+            }
+        };
+
         function handleLogin() {
             const nameInput = document.getElementById('userNameInput');
             const pinInput = document.getElementById('userPinInput');
             const genderInput = document.getElementById('userGenderInput');
             
-            const name = nameInput ? nameInput.value.trim() : "";
+            let name = currentUser.name;
+            if(!name) {
+                name = nameInput ? nameInput.value.trim() : "";
+                if(!name) {
+                    alert("الرجاء إدخال الاسم الثلاثي الكريم");
+                    return;
+                }
+            }
+
             const pin = pinInput ? pinInput.value.trim() : "";
 
-            if(!name) {
-                alert("الرجاء إدخال الاسم الكريم");
-                return;
-            }
-            if(!pin) {
-                alert("الرجاء إدخال الرمز السري الشخصي");
-                return;
-            }
-
-            // نظام التحقق من الحساب والرمز السري
-            if(usersPins[name]) {
-                if(usersPins[name].pin !== pin) {
-                    alert("❌ الرمز السري غير صحيح لهذا الاسم! يرجى إدخال الرمز الصحيح الخاص بك.");
+            // التحقق من الرمز السري إن وجد مسجلاً مسبقاً
+            if(usersPins[name] && usersPins[name].pin) {
+                if(pin !== "" && pin !== usersPins[name].pin) {
+                    alert("❌ الرمز السري غير صحيح!");
                     return;
                 }
                 currentUser.gender = usersPins[name].gender;
             } else {
-                // تسجيل زبون جديد مع رمزه وجنسه
+                // إذا لم يكن مسجلاً، نسجل الاسم والجنس والرمز (إن أدخله الزبون اختيارياً)
                 const gender = genderInput ? genderInput.value : 'male';
-                usersPins[name] = { pin: pin, gender: gender };
-                localStorage.setItem('naser_users_pins', JSON.stringify(usersPins));
                 currentUser.gender = gender;
+                if(pin !== "") {
+                    usersPins[name] = { pin: pin, gender: gender };
+                    localStorage.setItem('naser_users_pins', JSON.stringify(usersPins));
+                }
             }
 
             currentUser.name = name;
+            localStorage.setItem('naser_current_user', JSON.stringify(currentUser));
+            initAppSession();
+        }
 
+        function initAppSession() {
             document.getElementById('welcomeUser').innerText = `أهلاً بك، ${currentUser.name}`;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
@@ -563,9 +586,9 @@
             let total = 0;
             cart.forEach(item => { total += item.price * item.qty; });
 
-            let text = `🛒 *طلب جديد من متجر النصر*\n\n👤 اسم الزبون: ${currentUser.name} (${currentUser.gender === 'male' ? 'ذكر' : 'أنثى'})\n\n📦 المنتجات المطلوبة مع صورها:\n`;
+            let text = `🛒 *طلب جديد من متجر النصر*\n\n👤 اسم الزبون الثلاثي: ${currentUser.name} (${currentUser.gender === 'male' ? 'ذكر' : 'أنثى'})\n\n📦 المنتجات المطلوبة مع صورها:\n`;
             cart.forEach(item => {
-                text += `\n- *${item.name}* (العدد: ${item.qty}) - السعر: ${(item.price * item.qty).toLocaleString()} ل.س\n🔗 صورة المنتج: ${item.image}\n`;
+                text += `\n- *${item.name}* (العدد: ${item.qty}) - السعر: ${(item.price * item.qty).toLocaleString()} ل.س\n🔗 رابط صورة المنتج: ${item.image}\n`;
             });
             text += `\n💰 المجموع الكلي: ${total.toLocaleString()} ل.س`;
 
