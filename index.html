@@ -124,7 +124,7 @@
                 <div id="newsContainer" class="space-y-3"></div>
             </div>
 
-            <!-- صفحة الاستعلامات -->
+            <!-- صفحة الاستعلامات والدفع -->
             <div id="tab-contact" class="tab-content hidden space-y-4">
                 <h3 class="text-lg font-bold text-goldAccent border-b border-gray-800 pb-2"><i class="fa-solid fa-circle-info ml-2"></i> صفحة الاستعلامات والدفع</h3>
                 <div class="bg-cardBg border border-gray-800 p-5 rounded-2xl text-center space-y-4">
@@ -138,12 +138,19 @@
                         </a>
                     </div>
 
-                    <div class="border-t border-gray-800 pt-4 mt-4 space-y-2">
+                    <div class="border-t border-gray-800 pt-4 mt-4 space-y-3">
                         <h4 class="font-bold text-goldAccent text-xs">💳 الدفع عبر باركود شامكاش (ShamCash)</h4>
-                        <p class="text-[11px] text-gray-400">قم بمسح الباركود أدناه لإتمام عملية الدفع الرقمي:</p>
+                        <p class="text-[11px] text-gray-400">قم بمسح الباركود أو حفظه على هاتفك لإتمام عملية الدفع الرقمي:</p>
+                        
+                        <!-- عرض الباركود -->
                         <div class="w-48 h-48 mx-auto bg-darkBg border border-goldAccent/30 rounded-2xl overflow-hidden p-2 flex items-center justify-center">
                             <img id="shamcashImgDisplay" src="" class="w-full h-full object-contain">
                         </div>
+
+                        <!-- زر حفظ الباركود -->
+                        <a id="downloadShamcashBtn" href="#" download="ShamCash_QR.jpg" class="inline-flex items-center justify-center gap-2 bg-goldAccent hover:opacity-90 text-black font-bold py-2 px-6 rounded-xl text-xs shadow-md transition">
+                            <i class="fa-solid fa-download"></i> حفظ صورة باركود شامكاش
+                        </a>
                     </div>
                 </div>
             </div>
@@ -337,7 +344,9 @@
             document.getElementById('contactCallBtn').href = `tel:${storeSettings.phone}`;
             document.getElementById('settingWhatsapp').value = storeSettings.whatsapp;
             document.getElementById('settingPhone').value = storeSettings.phone;
+            
             document.getElementById('shamcashImgDisplay').src = storeSettings.shamcashQR;
+            document.getElementById('downloadShamcashBtn').href = storeSettings.shamcashQR;
         }
 
         function saveStoreSettings() {
@@ -527,9 +536,9 @@
             let total = 0;
             cart.forEach(item => { total += item.price * item.qty; });
 
-            let text = `🛒 *طلب جديد من متجر النصر*\n\n👤 اسم الزبون: ${currentUser.name} (${currentUser.gender === 'male' ? 'ذكر' : 'أنثى'})\n\n📦 المنتجات:\n`;
+            let text = `🛒 *طلب جديد من متجر النصر*\n\n👤 اسم الزبون: ${currentUser.name} (${currentUser.gender === 'male' ? 'ذكر' : 'أنثى'})\n\n📦 المنتجات المطلوبة:\n`;
             cart.forEach(item => {
-                text += `- ${item.name} (عدد: ${item.qty}) - السعر: ${(item.price * item.qty).toLocaleString()} ل.س\n`;
+                text += `- ${item.name} (العدد: ${item.qty}) - السعر: ${(item.price * item.qty).toLocaleString()} ل.س\n`;
             });
             text += `\n💰 المجموع الكلي: ${total.toLocaleString()} ل.س`;
 
@@ -743,7 +752,8 @@
             if(!tbody) return;
             tbody.innerHTML = '';
             
-            if(debts.length === 0) {
+            if(debts.length === 0). ده
+            {
                 tbody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-3">لا توجد ديون مسجلة</td></tr>`;
                 return;
             }
