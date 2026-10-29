@@ -163,7 +163,7 @@
             <div id="tab-admin" class="tab-content hidden space-y-6">
                 <div id="adminLock" class="bg-cardBg border border-gray-800 p-6 rounded-2xl text-center space-y-4">
                     <h3 class="text-lg font-bold text-goldAccent">لوحة المشرف المحمية</h3>
-                    <p class="text-xs text-gray-400">أدخل كلمة السر الخاصة بالمشرف للوصول لإدارة المتجر والديون والأخبار:</p>
+                    <p class="text-xs text-gray-400">أدخل كلمة السر الخاصة للوصول لإدارة المتجر والديون والأخبار:</p>
                     <input type="password" id="adminPasswordInput" class="w-full max-w-xs mx-auto bg-darkBg border border-gray-700 rounded-xl px-4 py-2 text-center text-white focus:outline-none focus:border-goldAccent block text-sm" placeholder="كلمة السر">
                     <button onclick="verifyAdmin()" class="bg-goldAccent text-black font-bold px-6 py-2 rounded-xl text-sm">دخول اللوحة</button>
                 </div>
@@ -319,10 +319,8 @@
             { id: '1', title: 'أهلاً بكم في متجر النصر', content: 'تم افتتاح قسم الألبسة والاكسسوارات الجديدة بأسعار منافسة.', date: '2026/10/28' }
         ];
 
-        // تحقق تلقائي إذا كان الاسم مخزناً مسبقاً
         window.onload = function() {
             if(currentUser.name) {
-                // إذا كان مسجلاً مسبقاً، نخفي خانة الاسم والجنس ونطلب الرمز السري فقط إن وجد
                 document.getElementById('nameFieldContainer').style.display = 'none';
                 document.getElementById('genderFieldContainer').style.display = 'none';
                 document.getElementById('userNameInput').value = currentUser.name;
@@ -351,7 +349,6 @@
 
             const pin = pinInput ? pinInput.value.trim() : "";
 
-            // التحقق من الرمز السري إذا كان مسجلاً مسبقاً لهذا الزبون
             if(usersPins[name]) {
                 if(pin !== usersPins[name].pin) {
                     alert("❌ الرمز السري غير صحيح!");
@@ -359,7 +356,6 @@
                 }
                 currentUser.gender = usersPins[name].gender;
             } else {
-                // زبون جديد أو أول مرة يضع رمزاً
                 const gender = genderInput ? genderInput.value : 'male';
                 currentUser.gender = gender;
                 if(pin !== "") {
